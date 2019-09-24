@@ -145,5 +145,5 @@ The script assumes
 The command mounts `/home/$GCP_USER` directory in the GCP instance as `/data` when running the image.
 
 ## Register the script to Go client
-Register the script to your Go client. If you use Lizzie, the entry of the engine will be `./katago.sh --weights %network-file`. You will need to `--weights %network-file` argument since Lizzie checks it.
+Register the script to your Go client. If you use Lizzie, the entry of the engine will be `./katago.sh --weights %network-file`. You will need to add `--weights %network-file` argument since Lizzie checks it.
 
