@@ -1,11 +1,17 @@
 # katago-docker
-Tools and Docker image to run KataGo in GCP
+A Docker image to run KataGo in GCP
+
+
+# Important notice
+Please don't forget to stop your GCP instance to avoid incurring charges to your account when you don't use it. 
+
+
 
 # Quick Start
 ## Launch a new instance 
 See instructions in Google Cloud Platform to launch an instance with GPU.
 
-This docker image is tested with the "GPU Optimized Debian m32 (with CUDA 10.0)" image with NVIDIA Tesla K80 GPU.
+This Docker image is tested with the "GPU Optimized Debian m32 (with CUDA 10.0)" image with NVIDIA Tesla K80 GPU.
 
 ## SSH to the instance
 
@@ -43,8 +49,8 @@ For example,
 $ wget https://raw.githubusercontent.com/lightvector/KataGo/master/cpp/configs/gtp_example.cfg
 ```
 
-## Running KataGo from the docker image
-Now, you are ready to run KataGo docker image. Run the follwoing command.
+## Running KataGo from the Docker image
+Now, you are ready to run KataGo Docker image. Run the follwoing command.
 
 ```sh
 $ docker run --rm -it \
@@ -140,3 +146,4 @@ The command mounts `/home/$GCP_USER` directory in the GCP instance as `/data` wh
 
 ## Register the script to Go client
 Register the script to your Go client. If you use Lizzie, the entry of the engine will be `./katago.sh --weights %network-file`. You will need to `--weights %network-file` argument since Lizzie checks it.
+
