@@ -99,6 +99,7 @@ $
 ```
 
 
+
 # Communicating with the engine from your local machine
 You can communicate with the engine from your local machine with SSH.
 
@@ -106,7 +107,8 @@ You can communicate with the engine from your local machine with SSH.
 
 
 ## Create a launcher script in your local machine
-Create a small shell script named `katago.sh` and register it to your Go client. The script will be like this. Please adjust user name, IP adress of the instance and path to the model file.
+Create a small shell script named `katago.sh` by adding GCP_USER and GCP_IP in it.
+
 
 ```sh
 #!/bin/bash
@@ -130,3 +132,11 @@ ssh -o 'StrictHostKeyChecking no' $GCP_USER@$IP \
     -config /data/gtp_example.cfg \
     -override-version 0.17
 ```
+The script assumes
+  - The model file is stored as `/home/$GCP_USER/g104-b15c192-s297383936-d140330251/model.txt.gz` in the GCP instance.
+  - The config file is stored as `/home/$GCP_USER/gtp_example.cfg` in the GCP instance.
+
+The command mounts `/home/$GCP_USER` directory in the GCP instance as `/data` when running the image.
+
+## Register the script to Go client
+Register the script to your Go client. If you use Lizzie, the entry of the engine will be `./katago.sh --weights %network-file`. You will need to `--weights %network-file` argument since Lizzie checks it.
