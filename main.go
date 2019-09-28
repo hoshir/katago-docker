@@ -20,7 +20,7 @@ var (
 
 func getPathInDocker(base, path string) (string, error) {
 	if strings.Contains(path, "..") || strings.HasPrefix(path, "/") {
-		return "", fmt.Errorf("invalid path")
+		return "", fmt.Errorf("path should be relative from the current directory")
 	}
 
 	if strings.HasPrefix(path, "./") {
@@ -38,12 +38,12 @@ func buildDockerCommand() string {
 
 	modelFilePath, err := getPathInDocker(currentDir, *modelFile)
 	if err != nil {
-		panic(err)
+		log.Fatalln("invalid model path.", err)
 	}
 
 	configFilePath, err := getPathInDocker(currentDir, *configFile)
 	if err != nil {
-		panic(err)
+		log.Fatalln("invalid config path.", err)
 	}
 
 	dockerArgs := fmt.Sprintf("run -it --rm --runtime nvidia -v %s:%s", currentDir, MountDir)
@@ -52,15 +52,15 @@ func buildDockerCommand() string {
 	return fmt.Sprintf("%s %s %s", dockerArgs, *image, katagoArg)
 }
 
-func checkArgs() error {
+func checkArgs() {
 	flag.Parse()
 
 	// Check arguments
-	if modelFile == nil {
+	if *modelFile == "" {
 		log.Fatalln("-model should not be empty")
 	}
 
-	if configFile == nil {
+	if *configFile == "" {
 		log.Fatalln("-config should not be empty")
 	}
 }
@@ -69,6 +69,7 @@ func main() {
 	checkArgs()
 
 	dockerArgs := strings.Split(buildDockerCommand(), " ")
+	log.Println(dockerArgs)
 	cmd := exec.Command("docker", dockerArgs...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
