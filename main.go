@@ -4,18 +4,21 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"strings"
 )
 
 var DefaultDockerImage = "hoshir/katago-v1.2-cuda10.0-linux-x64"
+var DefaultPort = 6000
 var MountDir = "/data"
 
 var (
 	configFile = flag.String("config", "", "A path to the config file")
 	image      = flag.String("image", DefaultDockerImage, "A docker image name")
 	modelFile  = flag.String("model", "", "A path to the model file")
+	port       = flag.Int("port", DefaultPort, "A port to communicate with gtp-proxy")
 )
 
 func getPathInDocker(base, path string) (string, error) {
@@ -46,7 +49,7 @@ func buildDockerCommand() string {
 		log.Fatalln("invalid config path.", err)
 	}
 
-	dockerArgs := fmt.Sprintf("run -it --rm --runtime nvidia -v %s:%s", currentDir, MountDir)
+	dockerArgs := fmt.Sprintf("run -i -a stdin -a stdout -a stderr --rm --runtime nvidia -v %s:%s", currentDir, MountDir)
 	katagoArg := fmt.Sprintf("gtp -model %s -config %s -override-version 0.17", modelFilePath, configFilePath)
 
 	return fmt.Sprintf("%s %s %s", dockerArgs, *image, katagoArg)
@@ -67,17 +70,29 @@ func checkArgs() {
 
 func main() {
 	checkArgs()
-
 	dockerArgs := strings.Split(buildDockerCommand(), " ")
-	log.Println(dockerArgs)
-	cmd := exec.Command("docker", dockerArgs...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
 
-	err := cmd.Start()
+	listenPort := fmt.Sprintf(":%d", *port)
+	listen, err := net.Listen("tcp", listenPort)
 	if err != nil {
-		log.Fatal("Failed to start docker", err)
+		log.Fatal(err)
 	}
 
-	cmd.Wait()
+	for {
+		conn, err := listen.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		cmd := exec.Command("docker", dockerArgs...)
+		cmd.Stdin = conn
+		cmd.Stdout = conn
+
+		if err := cmd.Start(); err != nil {
+			log.Fatal("Failed to start docker", err)
+		}
+
+		cmd.Wait()
+		conn.Close()
+	}
 }
